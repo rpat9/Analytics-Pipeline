@@ -55,15 +55,27 @@ This starts:
 ```bash
 cd backend
 npm install
+```
+
+### 3. Run Services
+
+**API Service** (database connection testing):
+```bash
 npm run dev
 ```
 
-The API service will connect to both databases and confirm successful connections.
+**Ingestion Service** (event generator):
+```bash
+npm run ingestion
+```
 
-### 3. Verify Database Connections
-You should see console output confirming:
-- ✅ Redis connected successfully
-- ✅ PostgreSQL connected successfully
+The ingestion service generates realistic analytics events and publishes them to Redis Stream at a configurable rate.
+
+### 4. Verify System
+Check that events are being generated:
+```bash
+docker exec -it analytics-redis redis-cli XLEN analytics_events
+```
 
 ## Project Structure
 
@@ -81,17 +93,25 @@ Analytics-Pipeline/
 
 ## Development Status
 
-### ✅ Completed
+### Completed
 - [x] Docker infrastructure setup (Redis + TimescaleDB)
 - [x] Shared backend configuration (env, config, logger)
 - [x] Database connection testing
 - [x] Project structure and organization
+- [x] Event schema definition with 4 event types
+- [x] Event ingestion service with rate control and burst mode
+- [x] Redis Stream integration with 100K+ events tested
+- [x] Stability testing (1.5 hours, zero errors)
 
-### 🚧 In Progress
-- [ ] Event ingestion service
+### In Progress
 - [ ] Event consumer service
 - [ ] REST API endpoints
 - [ ] Frontend dashboard
+npm run ingestion        # Run event generator
+npm run consumer         # Run event consumer (coming soon)
+
+# Verify Event Stream
+docker exec -it analytics-redis redis-cli XLEN analytics_events
 
 ## Useful Commands
 
@@ -107,7 +127,8 @@ npm run dev              # Run API service with hot reload
 
 # Check Logs
 docker logs analytics-redis
-docker logs analytics-timescaledb
+docEvent Schema Documentation](backend/ingestion/SCHEMA.md)
+- [ker logs analytics-timescaledb
 ```
 
 ## Database Credentials
@@ -129,4 +150,4 @@ docker logs analytics-timescaledb
 
 ## License
 
-ISC
+MIT
