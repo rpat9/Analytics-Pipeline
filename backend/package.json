@@ -4,6 +4,7 @@
   "description": "Analytics Pipeline Backend System",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon --exec ts-node api/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@types/pg": "^8.16.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "ioredis": "^5.9.2",

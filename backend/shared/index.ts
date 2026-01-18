@@ -1,1 +1,3 @@
-console.log("Shared config is now running");
+export { env } from "./env";
+export { createLogger } from "./logger";
+export { createRedisClient, createPgPool } from "./config";
