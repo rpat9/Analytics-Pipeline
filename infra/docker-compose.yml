@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: analytics-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: analytics-timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: analytics_user
+      POSTGRES_PASSWORD: analytics_pass
+      POSTGRES_DB: analytics
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analytics-user -d analytics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+    driver: local
+  timescale-data:
+    driver: local
