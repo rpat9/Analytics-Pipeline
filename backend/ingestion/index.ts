@@ -1,0 +1,1 @@
+console.log("Ingestion service is now running");

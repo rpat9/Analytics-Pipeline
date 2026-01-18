@@ -1,0 +1,1 @@
+console.log("Consumer service is now running");

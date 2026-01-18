@@ -1,0 +1,1 @@
+console.log("Shared config is now running");
