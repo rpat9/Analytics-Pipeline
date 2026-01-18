@@ -88,6 +88,43 @@ docker exec -it analytics-redis redis-cli
 docker exec -it analytics-timescaledb psql -U analytics_user -d analytics
 ```
 
+## Database Schema
+
+The TimescaleDB database includes:
+
+### Events Table
+```sql
+CREATE TABLE events (
+    time TIMESTAMPTZ NOT NULL,
+    event_id UUID NOT NULL,
+    event_type TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    properties JSONB,
+    PRIMARY KEY (event_id, time)
+);
+
+SELECT create_hypertable('events', 'time');
+```
+
+**Indexes:**
+- Composite primary key on `(event_id, time)` for hypertable partitioning
+- Index on `(event_type, time)` for filtering by event type
+- Index on `(user_id, time)` for user-specific queries
+- GIN index on `properties` JSONB column for flexible querying
+
+**Features:**
+- Hypertable automatically partitions data by time
+- Optimized for time-series queries
+- Efficient compression for historical data
+- Composite key prevents duplicate events
+
+### Setup Script
+
+The schema is defined in `schema.sql` and can be applied with:
+```bash
+docker exec -i analytics-timescaledb psql -U analytics_user -d analytics < schema.sql
+```
+
 ## Data Persistence
 
 Both services use Docker volumes for data persistence:

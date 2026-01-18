@@ -5,9 +5,11 @@ The backend consists of three TypeScript microservices that handle event ingesti
 ## Services
 
 ### 1. API Service (`/api`)
-REST API server that provides endpoints for querying analytics data.
+REST API server that provides endpoints for querying analytics data (coming soon).
 
-**Responsibilities:**
+**Status:** Placeholder - not yet implemented
+
+**Planned Responsibilities:**
 - Expose HTTP endpoints for data queries
 - Serve aggregated metrics from TimescaleDB
 - Provide WebSocket connections for real-time updates
@@ -17,20 +19,44 @@ REST API server that provides endpoints for querying analytics data.
 ### 2. Consumer Service (`/consumer`)
 Event processing service that reads from Redis Stream and writes to TimescaleDB.
 
+**Status:** Complete
+
 **Responsibilities:**
-- Consume events from Redis Stream
-- Process and validate event data
-- Write processed events to TimescaleDB
-- Handle backpressure and error recovery
+- Consume events from Redis Stream using consumer groups
+- Batch process events for cost efficiency
+- Validate event data using Zod schemas
+- Write processed events to TimescaleDB in transactions
+- Track performance metrics and lag
+- Handle errors with transaction rollback
+
+**Key Features:**
+- Batch size: 100 events
+- Processing rate: 26-28 events/sec sustained
+- Lag monitoring every 10 seconds
+- Metrics export to CSV file
+- At-least-once delivery semantics
+
+See [consumer/README.md](consumer/README.md) for detailed documentation.
 
 ### 3. Ingestion Service (`/ingestion`)
 Event generator that simulates real-world analytics events.
 
+**Status:** Complete
+
 **Responsibilities:**
-- Generate realistic event data
-- Publish events to Redis Stream
-- Control event rate and volume
-- Simulate various event types
+- Generate realistic event data using predefined templates
+- Publish events to Redis Stream at configurable rates
+- Support burst mode for load testing
+- Monitor publishing performance
+
+**Key Features:**
+- 4 event types: page_view, button_click, api_call, error
+- Configurable rate: 28 events/sec (100K/hour)
+- Burst mode: 10x rate for 30 seconds every 5 minutes
+- Weighted distribution: 70% page views, 15% clicks, 10% API calls, 5% errors
+- Redis Stream publication with automatic stream creation
+
+See [ingestion/README.md](ingestion/README.md) for detailed documentation.
 
 ## Shared Modules (`/shared`)
 
@@ -54,6 +80,12 @@ Common utilities and configurations used across all services:
 ## Development
 
 ### Install Dependencies
+
+# Ingestion Service Configuration
+EVENTS_PER_SECOND=28
+BURST_MULTIPLIER=10
+BURST_INTERVAL_MS=300000
+BURST_DURATION_MS=30000
 ```bash
 npm install
 ```
@@ -65,13 +97,50 @@ REDIS_URL=redis://localhost:6379
 POSTGRES_URL=postgresql://analytics_user:analytics_pass@localhost:5432/analytics
 API_PORT=3001
 NODE_ENV=development
+```  # Coming soon
 ```
 
-### Run Services
-
-**API Service:**
+**Consumer Service:**
 ```bash
-npm run dev
+npm run consumer  # Processes events from Redis to database
+```
+
+**Ingestion Service:**
+```bash
+npm run ingestion  # Generates and publishes events
+```
+
+### Running the Full Pipeline
+
+1. Start Docker containers (Redis + TimescaleDB):
+   ```bash
+   cd infra
+   docker-compose up -d
+   ```
+
+2. Start consumer service (Terminal 1):
+   ```bash
+   cd backend
+   npm run consumer
+   ```
+
+3. Start ingestion service (Terminal 2):
+   ```bash
+   cd backend
+   npm run ingestion
+   ```
+
+4. Monitor metrics:
+   ```bash
+   # Check event stream length
+   docker exec -it analytics-redis redis-cli XLEN analytics_events
+   
+   # Check database count
+   docker exec -it analytics-timescaledb psql -U analytics_user -d analytics -c "SELECT COUNT(*) FROM events;"
+   
+   # View performance metrics
+   cat backend/metrics.csv
+   npm run dev
 ```
 
 **Consumer Service:**

@@ -59,7 +59,7 @@ npm install
 
 ### 3. Run Services
 
-**API Service** (database connection testing):
+**API Service** (coming soon):
 ```bash
 npm run dev
 ```
@@ -69,7 +69,12 @@ npm run dev
 npm run ingestion
 ```
 
-The ingestion service generates realistic analytics events and publishes them to Redis Stream at a configurable rate.
+**Consumer Service** (event processor):
+```bash
+npm run consumer
+```
+
+The ingestion service generates realistic analytics events and publishes them to Redis Stream at a configurable rate. The consumer service reads these events and stores them in TimescaleDB.
 
 ### 4. Verify System
 Check that events are being generated:
@@ -82,53 +87,56 @@ docker exec -it analytics-redis redis-cli XLEN analytics_events
 ```
 Analytics-Pipeline/
 ├── backend/           # Node.js/TypeScript backend services
-│   ├── api/          # REST API server
-│   ├── consumer/     # Event consumer service
-│   ├── ingestion/    # Event producer/generator
-│   └── shared/       # Shared utilities and config
-├── frontend/         # React frontend application
-├── infra/            # Docker infrastructure configuration
-└── scripts/          # Utility scripts
+│   ├── api/          # REST API server (placeholder)
+│   ├── consumer/     # Event consumer service (complete)
+│   ├── ingestion/    # Event producer/generator (complete)
+│   └── shared/       # Shared utilities and config (complete)
+├── frontend/         # React frontend application (planned)
+├── infra/            # Docker infrastructure configuration (complete)
+└── scripts/          # Utility scripts (empty)
 ```
 
-## Development Status
-
-### Completed
-- [x] Docker infrastructure setup (Redis + TimescaleDB)
-- [x] Shared backend configuration (env, config, logger)
-- [x] Database connection testing
+## Development Status and schema creation
 - [x] Project structure and organization
 - [x] Event schema definition with 4 event types
 - [x] Event ingestion service with rate control and burst mode
 - [x] Redis Stream integration with 100K+ events tested
 - [x] Stability testing (1.5 hours, zero errors)
+- [x] TimescaleDB schema with hypertable optimization
+- [x] Event consumer service with batch processing
+- [x] Performance monitoring and metrics tracking
+- [x] Consumer lag monitoring with CSV export
 
 ### In Progress
-- [ ] Event consumer service
 - [ ] REST API endpoints
 - [ ] Frontend dashboard
-npm run ingestion        # Run event generator
-npm run consumer         # Run event consumer (coming soon)
-
-# Verify Event Stream
-docker exec -it analytics-redis redis-cli XLEN analytics_events
 
 ## Useful Commands
 
 ```bash
+# Backend Services
+cd backend
+npm run dev              # Run API service (coming soon)
+npm run ingestion        # Run event generator
+npm run consumer         # Run event consumer
+
+# Verify Event Stream
+docker exec -it analytics-redis redis-cli XLEN analytics_events
+
+# Check Database Records
+docker exec -it analytics-timescaledb psql -U analytics_user -d analytics -c "SELECT COUNT(*) FROM events;"
+
+# View Consumer Metrics
+cat backend/metrics.csv
+
 # Docker Management
 docker-compose up -d      # Start containers
 docker-compose down       # Stop containers
 docker ps                 # Check container status
 
-# Backend Development
-cd backend
-npm run dev              # Run API service with hot reload
-
 # Check Logs
 docker logs analytics-redis
-docEvent Schema Documentation](backend/ingestion/SCHEMA.md)
-- [ker logs analytics-timescaledb
+docker logs analytics-timescaledb
 ```
 
 ## Database Credentials
@@ -145,6 +153,10 @@ docEvent Schema Documentation](backend/ingestion/SCHEMA.md)
 ## Documentation
 
 - [Backend Documentation](backend/README.md)
+- [Consumer Service](backend/consumer/README.md)
+- [Ingestion Service](backend/ingestion/README.md)
+- [Shared Modules](backend/shared/README.md)
+- [Event Schema Documentation](backend/ingestion/SCHEMA.md)
 - [Frontend Documentation](frontend/README.md)
 - [Infrastructure Setup](infra/README.md)
 
