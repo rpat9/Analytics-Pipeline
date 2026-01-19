@@ -59,7 +59,7 @@ npm install
 
 ### 3. Run Services
 
-**API Service** (coming soon):
+**API Service** (REST endpoints):
 ```bash
 npm run dev
 ```

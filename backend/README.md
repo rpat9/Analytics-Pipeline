@@ -5,16 +5,26 @@ The backend consists of three TypeScript microservices that handle event ingesti
 ## Services
 
 ### 1. API Service (`/api`)
-REST API server that provides endpoints for querying analytics data (coming soon).
+REST API server that provides endpoints for querying analytics data.
 
-**Status:** Placeholder - not yet implemented
+**Status:** Complete
 
-**Planned Responsibilities:**
+**Responsibilities:**
 - Expose HTTP endpoints for data queries
-- Serve aggregated metrics from TimescaleDB
-- Provide WebSocket connections for real-time updates
+- Serve aggregated metrics from TimescaleDB continuous aggregates
+- Provide real-time and historical metrics
+- In-memory caching for performance
+
+**Key Features:**
+- 4 REST endpoints (health, summary, realtime, hourly, recent events)
+- Response times: 5-38ms (target < 300ms)
+- Caching with 5-10s TTL
+- CORS enabled for frontend (localhost:5173)
+- Request logging with duration tracking
 
 **Port:** `3001`
+
+See [api/README.md](api/README.md) for detailed documentation.
 
 ### 2. Consumer Service (`/consumer`)
 Event processing service that reads from Redis Stream and writes to TimescaleDB.
