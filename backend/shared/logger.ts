@@ -17,15 +17,27 @@ class Logger {
 
     private log({ level, message, data }: Omit<LogOptions, 'service'>){
         const timestamp = new Date().toISOString();
-        const logMessage = {
-            timestamp,
-            service: this.service,
-            level: level.toUpperCase(),
-            message,
-            ...(data !== undefined && { data }),
-        };
         
-        const output = JSON.stringify(logMessage);
+        // Format for better readability
+        const timeStr = new Date().toLocaleTimeString();
+        const levelStr = level.toUpperCase().padEnd(5);
+        const serviceStr = this.service.padEnd(20);
+        
+        // Pretty print data if it exists
+        let dataStr = '';
+        if (data !== undefined && typeof data === 'object' && data !== null) {
+            const entries = Object.entries(data);
+            if (entries.length > 0) {
+                dataStr = ' | ' + entries.map(([key, value]) => {
+                    if (typeof value === 'number') {
+                        return `${key}=${value.toLocaleString()}`;
+                    }
+                    return `${key}=${value}`;
+                }).join(', ');
+            }
+        }
+        
+        const output = `[${timeStr}] ${levelStr} ${serviceStr} ${message}${dataStr}`;
 
         switch (level) {
             case 'error':
