@@ -48,14 +48,15 @@ const pgPool = createPgPool();
 
 ### logger.ts
 
-Structured JSON logging utility.
+Structured logging utility with human-readable output.
 
 **Features:**
 - Service-specific logger instances
-- JSON-formatted output for log aggregation
+- Formatted output for easy reading in terminals
 - Multiple log levels (info, warn, error, debug)
 - Timestamp and service name automatically included
 - Optional data objects for context
+- Automatic number formatting with commas
 
 **Usage:**
 ```typescript
@@ -67,14 +68,10 @@ logger.error('Connection failed', { error: err });
 ```
 
 **Log Format:**
-```json
-{
-  "timestamp": "2026-01-18T18:48:55.943Z",
-  "service": "my-service",
-  "level": "INFO",
-  "message": "Service started",
-  "data": {}
-}
+```
+[7:15:30 PM] INFO  my-service           Service started
+[7:15:31 PM] ERROR my-service           Connection failed | error=ECONNREFUSED
+[7:15:32 PM] INFO  consumer-service     Monitoring metrics | totalProcessed=10,242, lag=85, processingRate=28.5
 ```
 
 ### index.ts

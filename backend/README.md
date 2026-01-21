@@ -105,7 +105,7 @@ Common utilities and configurations used across all services:
 - Exports reusable database clients
 
 ### `logger.ts`
-- Structured JSON logging
+- Structured logging with human-readable format
 - Service-specific loggers
 - Log levels: info, warn, error, debug
 
