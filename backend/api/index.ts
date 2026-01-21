@@ -146,26 +146,26 @@ app.get("/metrics/hourly", withCache("hourly", 5), async (req: Request, res: Res
 
 // Endpoint 3: GET /metrics/summary
 // Returns high-level stats for dashboard cards
-app.get("/metrics/summary", withCache('summary', 10), async (req: Request, res: Response, next: NextFunction) => {
+app.get("/metrics/summary", withCache('summary', 5), async (req: Request, res: Response, next: NextFunction) => {
     try {
-        // Total events last hour (from materialized view)
+        // Total events last hour (query raw table for real-time data)
         const totalResult = await pool.query(`
-            SELECT SUM(event_count) as total
-            FROM events_per_minute
-            WHERE bucket > NOW() - INTERVAL '1 hour'
+            SELECT COUNT(*) as total
+            FROM events
+            WHERE time > NOW() - INTERVAL '1 hour'
         `);
 
         // Events per second (last hour)
-        const totalEvents = parseInt(totalResult.rows[0].total || 0)
+        const totalEvents = parseInt(totalResult.rows[0].total || 0);
         const eventsPerSecond = totalEvents / 3600;
 
         // Top events by type (last hour)
         const topEventsResult = await pool.query(`
             SELECT
                 event_type as type, 
-                SUM(event_count) as count
-            FROM events_per_minute
-            WHERE bucket > NOW() - INTERVAL '1 hour'
+                COUNT(*) as count
+            FROM events
+            WHERE time > NOW() - INTERVAL '1 hour'
             GROUP BY event_type
             ORDER BY count DESC
             LIMIT 3
