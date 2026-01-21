@@ -16,13 +16,35 @@ REST API server that provides endpoints for querying analytics data.
 - In-memory caching for performance
 
 **Key Features:**
-- 4 REST endpoints (health, summary, realtime, hourly, recent events)
+- 4 REST endpoints (health, summary, realtime, recent events)
 - Response times: 5-38ms (target < 300ms)
-- Caching with 5-10s TTL
+- Caching with 5s TTL for synchronized updates
 - CORS enabled for frontend (localhost:5173)
 - Request logging with duration tracking
+- Real-time queries on raw events table for instant updates
+- Continuous aggregate fallback for historical queries
 
 **Port:** `3001`
+
+**API Endpoints:**
+
+1. `GET /health` - Health check
+   - No cache
+   - Returns: `{ status: "ok", timestamp: ISO8601 }`
+
+2. `GET /metrics/summary` - Dashboard summary metrics
+   - Cache: 5s TTL
+   - Queries: Raw events table (last hour)
+   - Returns: Total events, events/sec, unique users, top 3 event types
+
+3. `GET /metrics/realtime` - Real-time activity chart data
+   - Cache: 5s TTL
+   - Queries: Raw events with 10-second time buckets (last 5 minutes)
+   - Returns: 30 buckets with counts per event type
+
+4. `GET /events/recent?limit=N` - Recent events list
+   - No cache (always fresh)
+   - Returns: Latest N events ordered by time DESC
 
 See [api/README.md](api/README.md) for detailed documentation.
 
