@@ -17,7 +17,7 @@ REST API server that provides endpoints for querying analytics data.
 
 **Key Features:**
 - 4 REST endpoints (health, summary, realtime, recent events)
-- Response times: 5-38ms (target < 300ms)
+- Response times: 5–38ms (target < 300ms)
 - Caching with 5s TTL for synchronized updates
 - CORS enabled for frontend (localhost:5173)
 - Request logging with duration tracking
@@ -55,7 +55,7 @@ Event processing service that reads from Redis Stream and writes to TimescaleDB.
 
 **Responsibilities:**
 - Consume events from Redis Stream using consumer groups
-- Batch process events for cost efficiency
+- Batch process events for efficiency
 - Validate event data using Zod schemas
 - Write processed events to TimescaleDB in transactions
 - Track performance metrics and lag
@@ -63,10 +63,10 @@ Event processing service that reads from Redis Stream and writes to TimescaleDB.
 
 **Key Features:**
 - Batch size: 100 events
-- Processing rate: 26-28 events/sec sustained
+- Processing rate: 26–28 events/sec sustained
+- At-least-once delivery, messages acknowledged only after successful DB commit
 - Lag monitoring every 10 seconds
 - Metrics export to CSV file
-- At-least-once delivery semantics
 
 See [consumer/README.md](consumer/README.md) for detailed documentation.
 
@@ -112,12 +112,6 @@ Common utilities and configurations used across all services:
 ## Development
 
 ### Install Dependencies
-
-# Ingestion Service Configuration
-EVENTS_PER_SECOND=28
-BURST_MULTIPLIER=10
-BURST_INTERVAL_MS=300000
-BURST_DURATION_MS=30000
 ```bash
 npm install
 ```
@@ -129,17 +123,23 @@ REDIS_URL=redis://localhost:6379
 POSTGRES_URL=postgresql://analytics_user:analytics_pass@localhost:5432/analytics
 API_PORT=3001
 NODE_ENV=development
-```  # Coming soon
+```
+
+### Running Services
+
+**API Service:**
+```bash
+npm run dev
 ```
 
 **Consumer Service:**
 ```bash
-npm run consumer  # Processes events from Redis to database
+npm run consumer
 ```
 
 **Ingestion Service:**
 ```bash
-npm run ingestion  # Generates and publishes events
+npm run ingestion
 ```
 
 ### Running the Full Pipeline
@@ -162,28 +162,24 @@ npm run ingestion  # Generates and publishes events
    npm run ingestion
    ```
 
-4. Monitor metrics:
+4. Start API service (Terminal 3):
+   ```bash
+   cd backend
+   npm run dev
+   ```
+
+5. Monitor metrics:
    ```bash
    # Check event stream length
    docker exec -it analytics-redis redis-cli XLEN analytics_events
-   
+
    # Check database count
-   docker exec -it analytics-timescaledb psql -U analytics_user -d analytics -c "SELECT COUNT(*) FROM events;"
-   
+   docker exec -it analytics-timescaledb psql -U analytics_user -d analytics \
+     -c "SELECT COUNT(*) FROM events;"
+
    # View performance metrics
    cat backend/metrics.csv
-   npm run dev
-```
-
-**Consumer Service:**
-```bash
-npm run consumer
-```
-
-**Ingestion Service:**
-```bash
-npm run ingestion
-```
+   ```
 
 ## Database Connections
 
@@ -213,11 +209,16 @@ The project uses TypeScript with the following settings:
 ```
 backend/
 ├── api/
-│   └── index.ts          # API entry point
+│   ├── index.ts          # API server with all endpoints
+│   ├── db.ts             # PostgreSQL connection pool
+│   └── cache.ts          # In-memory cache with TTL
 ├── consumer/
-│   └── index.ts          # Consumer entry point
+│   └── index.ts          # Consumer service entry point
 ├── ingestion/
-│   └── index.ts          # Ingestion entry point
+│   ├── index.ts          # Ingestion service entry point
+│   ├── generator.ts      # Event generation logic
+│   ├── schema.ts         # Zod schemas and TypeScript types
+│   └── SCHEMA.md         # Event schema documentation
 ├── shared/
 │   ├── config.ts         # Database configurations
 │   ├── env.ts            # Environment validation
@@ -233,7 +234,6 @@ backend/
 - **express** - Web framework for API service
 - **ioredis** - Redis client for streaming
 - **pg** - PostgreSQL client
-- **ws** - WebSocket support
 - **zod** - Schema validation
 - **dotenv** - Environment variable loading
 
@@ -243,32 +243,9 @@ backend/
 - **nodemon** - Auto-restart on file changes
 - **typescript** - TypeScript compiler
 
-## Testing Connections
-
-The API service automatically tests database connections on startup:
-```bash
-npm run dev
-```
-
-Expected output:
-```
-Redis connected successfully.
-PostgreSQL connected successfully.
-All database connections successful.
-```
-
 ## Error Handling
 
 All services implement graceful shutdown:
 - SIGINT/SIGTERM handlers
 - Database connection cleanup
 - Proper resource disposal
-
-## Next Steps
-
-1. Implement event schema definitions
-2. Build ingestion service event generator
-3. Develop consumer service processing logic
-4. Create API endpoints for data access
-5. Add comprehensive error handling
-6. Implement monitoring and metrics

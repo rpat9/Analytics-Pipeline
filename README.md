@@ -1,9 +1,6 @@
 # Real-Time Analytics Pipeline
 
-## Project Overview
-Build a production-grade analytics system that ingests events, processes them in real-time, stores them efficiently, and visualizes metrics on a live dashboard.
-
-**End Goal:** A system that can handle 100,000 events per hour continuously, with a dashboard showing real-time metrics and the ability to query historical data.
+A Kafka-style analytics system that ingests, processes, and visualizes  real-time event streams. Processes 2.4M+ events at 26–28 events/sec with zero message loss, 55x query acceleration via TimescaleDB continuous aggregates, and a live React dashboard with sub-40ms API responses.
 
 ## Architecture
 
@@ -74,49 +71,67 @@ npm run ingestion
 npm run consumer
 ```
 
-The ingestion service generates realistic analytics events and publishes them to Redis Stream at a configurable rate. The consumer service reads these events and stores them in TimescaleDB.
+### 4. Run Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### 4. Verify System
+Dashboard available at `http://localhost:5173`
+
+### 5. Verify System
 Check that events are being generated:
 ```bash
 docker exec -it analytics-redis redis-cli XLEN analytics_events
 ```
+
+## Performance
+
+| Metric | Result |
+|--------|--------|
+| Sustained throughput | 26–28 events/sec |
+| Total events tested | 2.4M+ |
+| Message loss | 0% |
+| API response time | 5–38ms (target: <300ms) |
+| Query acceleration (continuous aggregates) | 20–55x vs raw table |
+| Stability test | 1.5 hours, zero errors |
 
 ## Project Structure
 
 ```
 Analytics-Pipeline/
 ├── backend/           # Node.js/TypeScript backend services
-│   ├── api/          # REST API server (placeholder)
-│   ├── consumer/     # Event consumer service (complete)
-│   ├── ingestion/    # Event producer/generator (complete)
-│   └── shared/       # Shared utilities and config (complete)
-├── frontend/         # React frontend application (planned)
-├── infra/            # Docker infrastructure configuration (complete)
-└── scripts/          # Utility scripts (empty)
+│   ├── api/          # REST API server
+│   ├── consumer/     # Event consumer service
+│   ├── ingestion/    # Event producer/generator
+│   └── shared/       # Shared utilities and config
+├── frontend/         # React dashboard application
+├── infra/            # Docker infrastructure configuration
+└── scripts/          # Utility scripts
 ```
 
-## Development Status and schema creation
+## Development Status - COMPLETED
+
 - [x] Project structure and organization
 - [x] Event schema definition with 4 event types
 - [x] Event ingestion service with rate control and burst mode
-- [x] Redis Stream integration with 100K+ events tested
+- [x] Redis Stream integration, 2.4M+ events tested
 - [x] Stability testing (1.5 hours, zero errors)
 - [x] TimescaleDB schema with hypertable optimization
-- [x] Event consumer service with batch processing
-- [x] Performance monitoring and metrics tracking
-- [x] Consumer lag monitoring with CSV export
-
-### In Progress
-- [ ] REST API endpoints
-- [ ] Frontend dashboard
+- [x] Continuous aggregates (minute / hour / day) with auto-refresh
+- [x] Event consumer service with batch processing and at-least-once delivery
+- [x] Performance monitoring and metrics tracking (CSV export)
+- [x] Consumer lag monitoring
+- [x] REST API, 4 endpoints, 5–38ms response times, in-memory caching
+- [x] React dashboard, real-time charts, summary cards, events table
 
 ## Useful Commands
 
 ```bash
 # Backend Services
 cd backend
-npm run dev              # Run API service (coming soon)
+npm run dev              # Run API service
 npm run ingestion        # Run event generator
 npm run consumer         # Run event consumer
 
@@ -159,6 +174,7 @@ docker logs analytics-timescaledb
 - [Event Schema Documentation](backend/ingestion/SCHEMA.md)
 - [Frontend Documentation](frontend/README.md)
 - [Infrastructure Setup](infra/README.md)
+- [Performance Test Results](query_results.md)
 
 ## License
 
